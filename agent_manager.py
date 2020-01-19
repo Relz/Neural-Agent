@@ -1,92 +1,49 @@
-#! /usr/bin/python3
-
-import simp_agent
-import time
-import urllib3
-
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+from agent import Agent
 
 
-# Менеджер, организующий взаимодействие агента с миром
-class Manager:
-    url = None  # url сервера
+class AgentManager:
+    server_helper_creators = []
+    attempt_count = 0
 
-    user_id = 0  # id пользователя
-    case_id = 0  # id задачи
+    def check(self, iteration_count):
+        print('Кол-во итераций:', iteration_count)
+        print('Кол-во попыток:', self.attempt_count)
 
-    map_numbers = []  # номера карт
-    attempts_count = 0  # количество попыток на карте
+        for server_helper_creator in self.server_helper_creators:
+            for iteration_number in range(1, iteration_count + 1):
+                iteration_game_count = 0
+                iteration_win_count = 0
+                iteration_score_count = 0
 
-    check_situations = 1  # получить информацию о всех пещерах вокруг
-
-    # PUBLIC METHODS ==============================================================
-
-    # Запуск проверки агента
-    def check(self, iter_count=1):
-        agent = simp_agent.SimpleAgent(
-            user_id=self.user_id,
-            case_id=self.case_id,
-            tournament_id=self.tournament_id,
-            hash_id=self.hash_id
-        )
-
-        print("Start checking.")
-        print("Iteration count: ", iter_count, ", attempt count: ", self.attempts_count, ", map numbers: ",
-              self.map_numbers)
-
-        for it in range(1, iter_count + 1):
-            iter_games_count = 0
-            iter_wins_count = 0
-            iter_score_count = 0
-            for map_number in self.map_numbers:
-                for attempt_num in range(1, self.attempts_count + 1):
-                    code, score = agent.play_game(map_number)
+                for attempt_number in range(1, self.attempt_count + 1):
+                    code, score = Agent().play_game(server_helper_creator())
 
                     if code is None:
-                        print("Connection failed for: map = {0}, attempt = {1}".format(map_number, attempt_num))
+                        print('Неудачное подключение для попытки №:', attempt_number)
                     else:
-                        iter_games_count += 1
+                        iteration_game_count += 1
                         if code == 2:
-                            iter_score_count += score
-                            iter_wins_count += 1
+                            iteration_score_count += score
+                            iteration_win_count += 1
 
-            if iter_games_count > 0:
-                iter_win_rate = (iter_wins_count * 100) / iter_games_count
-                iter_score_rate = iter_score_count / iter_games_count
-            else:
-                iter_win_rate = 0
-                iter_score_rate = 0
+                print('Закончилась итерация №' + str(iteration_number))
+                print('\tИгр в итерации:', iteration_game_count)
+                print('\tWin rate:', self.__calculate_win_rate__(iteration_win_count, iteration_game_count))
+                print('\tScore rate:', self.__calculate_score_rate__(iteration_score_count, iteration_game_count))
 
-            print("************************************")
-            print("Iteration: ", it, ", map: ", map_number)
-            print("Games: ", iter_games_count, ", Win rate: ", iter_win_rate, ", Score rate: ", iter_score_rate)
+    def __init__(self, server_helper_creators, attempts_count):
+        self.server_helper_creators = server_helper_creators
+        self.attempt_count = attempts_count
 
-    # PRIVATE METHODS =============================================================
+    @staticmethod
+    def __calculate_win_rate__(win_count, game_count):
+        return AgentManager.__calculate_rate__(win_count * 100, game_count)
 
-    def __init__(self, session_parameters, map_parameters):
-        self.user_id = session_parameters[0]
-        self.case_id = session_parameters[1]
-        self.tournament_id = session_parameters[2]
-        self.hash_id = session_parameters[3]
-        self.map_numbers = map_parameters[0]
-        self.attempts_count = map_parameters[1]
+    @staticmethod
+    def __calculate_score_rate__(score_count, game_count):
+        return AgentManager.__calculate_rate__(score_count, game_count)
 
+    @staticmethod
+    def __calculate_rate__(x, total):
+        return x / total if total > 0 else 0
 
-case_id = 20  # id кейса задачи
-user_id = 293  # id пользователя
-tournament_id = 0  # для выбора турнира
-hash_id = 0  # если контрольное тестирование
-
-agent_name = "Elder"  # название агента
-url = "https://mooped.net/local/its/game/agentaction/"  # url сервера
-
-map_numbers = list(range(1, 2))  # список номеров карт, на которых будем проверять агента
-attempts_per_map = 1  # количество попыток на каждую карту
-
-# создать менеджера и запустить
-obs = Manager([user_id, case_id, tournament_id, hash_id], [map_numbers, attempts_per_map])
-
-start = time.time()
-obs.check()
-end = time.time()
-print("Время проверки составило (мин) ", round((end - start) / 60))
