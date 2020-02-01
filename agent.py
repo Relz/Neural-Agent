@@ -11,11 +11,11 @@ class Agent:
         'none': ['noAct', 'noAct'],
         'take': ['noAct', 'Take'],
         'go_forward': ['noAct', 'Go'],
-        'go_back': ['upSideDn', 'Go'],
+        'go_backward': ['upSideDn', 'Go'],
         'go_left': ['onLeft', 'Go'],
         'go_right': ['onRight', 'Go'],
         'shoot_forward': ['noAct', 'Shoot'],
-        'shoot_back': ['upSideDn', 'Shoot'],
+        'shoot_backward': ['upSideDn', 'Shoot'],
         'shoot_left': ['onLeft', 'Shoot'],
         'shoot_right': ['onRight', 'Shoot']
     }
