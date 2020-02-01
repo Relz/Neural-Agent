@@ -5,6 +5,7 @@ from world_info import WorldInfo
 
 
 class Agent:
+    neural_network = None
     state_hash = 0
 
     all_acts_dict = {
@@ -48,6 +49,9 @@ class Agent:
             print('Код завершения:', response_error)
 
         return response_code, score
+
+    def __init__(self, neural_network):
+        self.neural_network = neural_network
 
     @staticmethod
     def __game_not_over__(request_error):

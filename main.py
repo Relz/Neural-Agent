@@ -12,6 +12,7 @@ case_id = 20
 tournament_id = 0
 hash_id = 0
 map_numbers = list(range(1, 2))
+file_name = f'./neural_network_models/{name}'
 input_layer_size = 3 + 4 + 4 * 8  # количество нейронов, описывающих состояние игры
 hidden_layer_size = 64   # произвольно подбираемое число
 output_layer_size = 9  # кол-во возможных действий агента
@@ -19,7 +20,6 @@ alpha = 0  # фактор обучения
 gamma = 0  # фактор дисконтирования
 delta = 0  # коэффициент уменьшения alpha
 batch_size = 10  # размер пакета обучения: сколько игр нужно отыграть для начала анализа
-file_name = f'./neural_network_models/{name}'
 
 agent_manager = AgentManager(
     server_helper_creators=
@@ -31,7 +31,15 @@ agent_manager = AgentManager(
             lambda: []
         )[case_id == 0]()
     ),
-    attempts_count=1
+    attempts_count=1,
+    file_name=file_name,
+    input_layer_size=input_layer_size,
+    hidden_layer_size=hidden_layer_size,
+    output_layer_size=output_layer_size,
+    alpha=alpha,
+    gamma=gamma,
+    delta=delta,
+    batch_size=batch_size
 )
 
 agent_manager.check(iteration_count=1)

@@ -9,6 +9,10 @@ class NeuralNetwork:
     input_layer_size = 0
     hidden_layer_size = 0
     output_layer_size = 0
+    alpha = 0
+    gamma = 0
+    delta = 0
+    batch_size = 0
 
     model = {}
 
@@ -30,11 +34,26 @@ class NeuralNetwork:
     def save(self):
         pickle.dump(self.model, open(self.file_name, 'wb'))
 
-    def __init__(self, file_name, input_layer_size, hidden_layer_size, output_layer_size):
+    def __init__(
+            self,
+            file_name,
+            input_layer_size,
+            hidden_layer_size,
+            output_layer_size,
+            alpha,
+            gamma,
+            delta,
+            batch_size
+    ):
         self.file_name = file_name
         self.input_layer_size = input_layer_size
         self.hidden_layer_size = hidden_layer_size
         self.output_layer_size = output_layer_size
+        self.alpha = alpha
+        self.gamma = gamma
+        self.delta = delta
+        self.batch_size = batch_size
+
         try:
             self.__try_load__()
         except OSError:
