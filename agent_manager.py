@@ -5,7 +5,7 @@ from neural_network import NeuralNetwork
 class AgentManager:
     server_helper_creators = []
     attempt_count = 0
-    alpha = 0
+    learning_rate = 0
     gamma = 0
     delta = 0
     batch_size = 0
@@ -20,7 +20,7 @@ class AgentManager:
                 input_layer_size=self.input_layer_size,
                 hidden_layer_size=self.hidden_layer_size,
                 output_layer_size=self.output_layer_size,
-                alpha=self.alpha,
+                learning_rate=self.learning_rate,
                 gamma=self.gamma,
                 delta=self.delta,
                 batch_size=self.batch_size
@@ -44,10 +44,10 @@ class AgentManager:
                             iteration_score_count += score
                             iteration_win_count += 1
 
-                print('Закончилась итерация №' + str(iteration_number))
-                print('\tИгр в итерации:', iteration_game_count)
-                print('\tWin rate:', self.__calculate_win_rate__(iteration_win_count, iteration_game_count))
-                print('\tScore rate:', self.__calculate_score_rate__(iteration_score_count, iteration_game_count))
+                    print('\tИтерация №' + str(iteration_number))
+                    print('\tИгр в итерации:', iteration_game_count)
+                    print('\tWin rate:', self.__calculate_win_rate__(iteration_win_count, iteration_game_count))
+                    print('\tScore rate:', self.__calculate_score_rate__(iteration_score_count, iteration_game_count))
 
     def __init__(
             self,
@@ -57,7 +57,7 @@ class AgentManager:
             input_layer_size,
             hidden_layer_size,
             output_layer_size,
-            alpha,
+            learning_rate,
             gamma,
             delta,
             batch_size
@@ -68,7 +68,7 @@ class AgentManager:
         self.input_layer_size = input_layer_size
         self.hidden_layer_size = hidden_layer_size
         self.output_layer_size = output_layer_size
-        self.alpha = alpha
+        self.learning_rate = learning_rate
         self.gamma = gamma
         self.delta = delta
         self.batch_size = batch_size

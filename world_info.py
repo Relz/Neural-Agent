@@ -120,6 +120,70 @@ class Perception:
     behind_left_cave = CaveInfo()
     behind_right_cave = CaveInfo()
 
+    def get_top_cave(self, pivot_direction):
+        return {
+            'Up': self.front_cave,
+            'Right': self.left_cave,
+            'Down': self.behind_cave,
+            'Left': self.right_cave
+        }[pivot_direction]
+
+    def get_top_right_cave(self, pivot_direction):
+        return {
+            'Up': self.front_right_cave,
+            'Right': self.front_left_cave,
+            'Down': self.behind_left_cave,
+            'Left': self.behind_right_cave
+        }[pivot_direction]
+
+    def get_right_cave(self, pivot_direction):
+        return {
+            'Up': self.right_cave,
+            'Right': self.front_cave,
+            'Down': self.left_cave,
+            'Left': self.behind_cave
+        }[pivot_direction]
+
+    def get_bottom_right_cave(self, pivot_direction):
+        return {
+            'Up': self.behind_right_cave,
+            'Right': self.front_right_cave,
+            'Down': self.front_left_cave,
+            'Left': self.behind_left_cave
+        }[pivot_direction]
+
+    def get_bottom_cave(self, pivot_direction):
+        return {
+            'Up': self.behind_cave,
+            'Right': self.right_cave,
+            'Down': self.front_cave,
+            'Left': self.left_cave
+        }[pivot_direction]
+
+    def get_bottom_left_cave(self, pivot_direction):
+        return {
+            'Up': self.behind_left_cave,
+            'Right': self.behind_right_cave,
+            'Down': self.front_right_cave,
+            'Left': self.front_left_cave
+        }[pivot_direction]
+
+    def get_left_cave(self, pivot_direction):
+        return {
+            'Up': self.left_cave,
+            'Right': self.behind_cave,
+            'Down': self.right_cave,
+            'Left': self.front_cave
+        }[pivot_direction]
+
+    def get_top_left_cave(self, pivot_direction):
+        return {
+            'Up': self.front_left_cave,
+            'Right': self.behind_left_cave,
+            'Down': self.behind_right_cave,
+            'Left': self.front_right_cave
+        }[pivot_direction]
+
     @staticmethod
     def parse(json_data):
         result = Perception()

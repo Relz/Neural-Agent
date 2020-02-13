@@ -8,15 +8,15 @@ class ServerHelperTraining:
     case_id = None
     map_number = None
 
-    def make_step(self, passive, active):
+    def make_step(self, action):
         return ServerHelperBase.send_request(
             self.URL,
             {
                 'userid': self.user_id,
                 'caseid': self.case_id,
                 'mapnum': self.map_number,
-                'passive': passive,
-                'active': active,
+                'passive': action.passive,
+                'active': action.active,
                 'checksituations': 1
             }
         )

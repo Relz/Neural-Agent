@@ -7,14 +7,14 @@ class ServerHelperTournament:
     user_id = None
     tournament_id = None
 
-    def make_step(self, passive, active):
+    def make_step(self, action):
         return ServerHelperBase.send_request(
             self.URL,
             {
                 'userid': self.user_id,
                 'tid': self.tournament_id,
-                'passive': passive,
-                'active': active,
+                'passive': action.passive,
+                'active': action.active,
                 'checksituations': 1
             }
         )
