@@ -9,6 +9,7 @@ class AgentManager:
     gamma = 0
     delta = 0
     batch_size = 0
+    decay_rate = 0
 
     def check(self, iteration_count):
         print('Кол-во итераций:', iteration_count)
@@ -23,7 +24,8 @@ class AgentManager:
                 learning_rate=self.learning_rate,
                 gamma=self.gamma,
                 delta=self.delta,
-                batch_size=self.batch_size
+                batch_size=self.batch_size,
+                decay_rate=self.decay_rate
             )
         )
 
@@ -60,7 +62,8 @@ class AgentManager:
             learning_rate,
             gamma,
             delta,
-            batch_size
+            batch_size,
+            decay_rate
     ):
         self.server_helper_creators = server_helper_creators
         self.attempt_count = attempts_count
@@ -72,6 +75,7 @@ class AgentManager:
         self.gamma = gamma
         self.delta = delta
         self.batch_size = batch_size
+        self.decay_rate = decay_rate
 
     @staticmethod
     def __calculate_win_rate__(win_count, game_count):

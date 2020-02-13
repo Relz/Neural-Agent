@@ -1,6 +1,5 @@
 import numpy as np
 import random as rnd
-import pandas as pd
 
 from world_info import WorldInfo
 from action import Action
@@ -16,7 +15,6 @@ class Agent:
 
     input_layers = []
     hidden_layers = []
-    zs = []
     rewards = []
     difference_vectors = []
 
@@ -51,7 +49,6 @@ class Agent:
         self.previous_state_hash = state_hash
 
         while self.__game_not_over__(response_error):
-            action_name = 'none'
             if response is not None:
                 action_name = self.__choose_action__(state_hash, world_info.agent_info.direction)
                 action = self.all_acts_dict[action_name]
@@ -74,6 +71,7 @@ class Agent:
         print('Код завершения:', response_error)
 
         self.neural_network.update(self.input_layers, self.hidden_layers, self.rewards, self.difference_vectors)
+        self.input_layers = self.hidden_layers = self.rewards = self.difference_vectors = []
 
         return response_code, score
 
@@ -115,16 +113,15 @@ class Agent:
 
     def __choose_action__(self, state_hash, agent_direction):
         input_layer = Agent.__state_hash_to_int_vector__(state_hash)
-        output_layer, z, hidden_layer = self.neural_network.policy_forward(input_layer)
+        output_layer, hidden_layer = self.neural_network.policy_forward(input_layer)
 
-        if rnd.random() < 0.5:
+        if rnd.random() < 1:
             output_layer = self.__correct_weights__(output_layer, input_layer, agent_direction)
 
-        difference_vector = (self.__get_absolute_weights__(output_layer) - output_layer).tolist()
+        difference_vector = (np.array(self.__get_absolute_weights__(output_layer)) - output_layer)
 
         self.input_layers.append(input_layer)
         self.hidden_layers.append(hidden_layer)
-        self.zs.append(z)
         self.difference_vectors.append(difference_vector)
 
         self.previous_weights_dictionary = dict(
@@ -273,7 +270,7 @@ class Agent:
                     is_bottom_cave_visible,
                     is_left_cave_visible
             ):
-                weights[1] *= 0.2
+                weights[1] *= 0
                 weights[5] = 0
 
             if Agent.__is_right_cave_visible__(
@@ -283,7 +280,7 @@ class Agent:
                     is_bottom_cave_visible,
                     is_left_cave_visible
             ):
-                weights[4] *= 0.2
+                weights[4] *= 0
                 weights[8] = 0
 
             if Agent.__is_behind_cave_visible__(
@@ -293,7 +290,7 @@ class Agent:
                     is_bottom_cave_visible,
                     is_left_cave_visible
             ):
-                weights[2] *= 0.2
+                weights[2] *= 0
                 weights[6] = 0
 
             if Agent.__is_left_cave_visible__(
@@ -303,7 +300,7 @@ class Agent:
                     is_bottom_cave_visible,
                     is_left_cave_visible
             ):
-                weights[3] *= 0.2
+                weights[3] *= 0
                 weights[7] = 0
 
         return weights
@@ -511,4 +508,4 @@ class Agent:
     def __get_absolute_weights__(weights):
         result = np.zeros_like(weights)
         result[np.array(weights).argmax()] = 1
-        return result
+        return result.tolist()
