@@ -28,9 +28,8 @@ class CaveInfo:
     @staticmethod
     def parse(json_data):
         cave_info = CaveInfo()
-        if 'isWall' in json_data:
-            cave_info.is_wall = json_data['isWall'] == 1
-        else:
+        cave_info.is_wall = 'isWall' in json_data and json_data['isWall'] == 1
+        if not cave_info.is_wall:
             cave_info.id = json_data['cNum']
             column = json_data['colN']
             row = json_data['rowN']
@@ -45,7 +44,7 @@ class CaveInfo:
                 cave_info.has_wind = json_data['isWind'] == 1
             if json_data['isBones'] != 'None':
                 cave_info.has_bones = json_data['isBones'] == 1
-            cave_info.is_visible = json_data['isVisiable'] == 1
+            cave_info.is_visible = json_data['isVisiable'] == True or json_data['isVisiable'] == '1'
             if 'dirList' in json_data:
                 cave_info.direction_list = json_data['dirList']
             if 'isSafety' in json_data:

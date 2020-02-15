@@ -1,3 +1,5 @@
+import random
+
 import urllib3
 from agent_manager import AgentManager
 from server_helper.server_helper_examination import ServerHelperExamination
@@ -7,21 +9,22 @@ from server_helper.server_helper_training import ServerHelperTraining
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 name = 'Elder'
-user_id = 293
-# case_id = 20  # 1 обвал, 1 монстр
+# user_id = 293
+user_id = 3574
+case_id = 20
+# case_id = 1  # 2 обвала, 1 монстр (всё видно)
 # case_id = 6  # 0 обвал, 0 монстр
-case_id = 1  # 2 обвала, 1 монстр (всё видно)
 # case_id = 7  # 1 обвал, 0 монстр
-# case_id = 11  # 0 обвал, 1 монстр
+# case_id = 20  # 1 обвал, 1 монстр
 tournament_id = 0
+# tournament_id = 38
 hash_id = 0
-map_numbers = list(range(1, 2))
+map_numbers = random.sample(list(range(1, 251)), 50)
 file_name = f'./neural_network_models/{name}'
 input_layer_size = 3 + 4 + 6 * 8  # количество нейронов, описывающих состояние игры
 hidden_layer_size = input_layer_size * 3   # произвольно подбираемое число
 output_layer_size = 9  # кол-во возможных действий агента
-# learning_rate = 0.1  # фактор обучения
-learning_rate = 0.1  # фактор обучения
+learning_rate = 0.01  # фактор обучения
 gamma = 0.9  # фактор дисконтирования
 delta = 0.0001  # коэффициент уменьшения alpha
 batch_size = 10  # размер пакета обучения: сколько игр нужно отыграть для начала анализа
@@ -37,7 +40,7 @@ agent_manager = AgentManager(
             lambda: []
         )[case_id == 0]()
     ),
-    attempts_count=1,
+    attempts_count=50,
     file_name=file_name,
     input_layer_size=input_layer_size,
     hidden_layer_size=hidden_layer_size,

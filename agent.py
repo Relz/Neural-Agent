@@ -53,6 +53,7 @@ class Agent:
         while self.__game_not_over__(response_error):
             if response is not None:
                 action_name = self.__choose_action__(state_hash, world_info.agent_info.direction)
+                print(f'Action: {action_name}')
                 action = self.all_acts_dict[action_name]
                 self.previous_score = score
                 self.previous_state_hash = state_hash
@@ -74,7 +75,10 @@ class Agent:
         print('Код завершения:', response_error)
 
         self.neural_network.update(self.input_layers, self.hidden_layers, self.rewards, self.difference_vectors)
-        self.input_layers = self.hidden_layers = self.rewards = self.difference_vectors = []
+        self.input_layers = []
+        self.hidden_layers = []
+        self.rewards = []
+        self.difference_vectors = []
 
         return response_code, score
 
@@ -99,16 +103,16 @@ class Agent:
 
     @staticmethod
     def __get_current_cave_state_hash__(cave):
-        return f'{int(cave.has_gold or 2)}' \
-               f'{int(cave.has_wind or 2)}' \
-               f'{int(cave.has_hole or 2)}' \
-               f'{int(cave.has_bones or 2)}'
+        return f'{int(cave.has_gold if cave.has_gold is not None else 2)}' \
+               f'{int(cave.has_wind if cave.has_wind is not None else 2)}' \
+               f'{int(cave.has_hole if cave.has_hole is not None else 2)}' \
+               f'{int(cave.has_bones if cave.has_bones is not None else 2)}'
 
     @staticmethod
     def __get_near_cave_state_hash__(cave):
         return f'{Agent.__get_current_cave_state_hash__(cave)}' \
                f'{int(cave.is_wall)}' \
-               f'{int(cave.is_visible or 2)}'
+               f'{int(cave.is_visible if cave.is_visible is not None else 2)}'
 
     @staticmethod
     def __game_not_over__(request_error):
@@ -119,9 +123,11 @@ class Agent:
         output_layer, hidden_layer = self.neural_network.policy_forward(input_layer)
 
         if rnd.random() < 1:
-            output_layer = self.__correct_weights__(output_layer.copy(), input_layer, agent_direction)
+            weights = self.__correct_weights__(output_layer.copy(), input_layer, agent_direction)
+        else:
+            weights = output_layer.copy()
 
-        difference_vector = (np.array(self.__get_absolute_weights__(output_layer)) - output_layer)
+        difference_vector = (np.array(self.__get_absolute_weights__(weights)) - output_layer)
 
         self.input_layers.append(input_layer)
         self.hidden_layers.append(hidden_layer)
@@ -140,7 +146,7 @@ class Agent:
                     'shoot_left',
                     'shoot_right'
                 ],
-                tuple(output_layer)
+                tuple(weights)
             )
         )
 
@@ -163,19 +169,23 @@ class Agent:
         # 7: 'shoot_left',
         # 8: 'shoot_right'
 
+        # Agent.__print_state_hash__(state_hash)
+
+        result = weights.copy()
+
         current_cave_has_gold = state_hash[3] == 1
-        if current_cave_has_gold == 1:  # надо брать клад
-            weights = np.ones(len(weights)) * 0
-            weights[0] = 1
+        if current_cave_has_gold:  # надо брать клад
+            result = np.ones(len(result)) * 0
+            result[0] = 1
         else:  # клада нет => пытаться брать не надо
-            weights[0] = 0
+            result[0] = 0
 
             is_monster_alive = state_hash[0] == 1
             is_monster_near = state_hash[6] == 1
             has_arrows = state_hash[1] != 0
             if (not is_monster_alive) or (not has_arrows) or (not is_monster_near):
                 # монстр мёртв или нет стрел или рядом нет монстра => не стрелять куда-либо
-                weights[5] = weights[6] = weights[7] = weights[8] = 0
+                result[5] = result[6] = result[7] = result[8] = 0
 
             is_top_cave_wall = state_hash[11] == 1
             is_right_cave_wall = state_hash[11 + 12] == 1
@@ -189,7 +199,7 @@ class Agent:
                     is_bottom_cave_wall,
                     is_left_cave_wall
             ):
-                weights[1] = weights[5] = 0
+                result[1] = result[5] = 0
 
             if Agent.__is_right_cave_wall__(
                     agent_direction,
@@ -198,7 +208,7 @@ class Agent:
                     is_bottom_cave_wall,
                     is_left_cave_wall
             ):
-                weights[4] = weights[8] = 0
+                result[4] = result[8] = 0
 
             if Agent.__is_behind_cave_wall__(
                     agent_direction,
@@ -207,7 +217,7 @@ class Agent:
                     is_bottom_cave_wall,
                     is_left_cave_wall
             ):
-                weights[2] = weights[6] = 0
+                result[2] = result[6] = 0
 
             if Agent.__is_left_cave_wall__(
                     agent_direction,
@@ -216,7 +226,7 @@ class Agent:
                     is_bottom_cave_wall,
                     is_left_cave_wall
             ):
-                weights[3] = weights[7] = 0
+                result[3] = result[7] = 0
 
             is_last_leg = state_hash[2] == 1  # одна нога => не проходим через яму
             if is_last_leg:
@@ -232,7 +242,7 @@ class Agent:
                         has_bottom_cave_hole,
                         has_left_cave_hole
                 ):
-                    weights[1] = 0
+                    result[1] = 0
 
                 if Agent.__has_right_cave_hole__(
                         agent_direction,
@@ -241,7 +251,7 @@ class Agent:
                         has_bottom_cave_hole,
                         has_left_cave_hole
                 ):
-                    weights[4] = 0
+                    result[4] = 0
 
                 if Agent.__has_behind_cave_hole__(
                         agent_direction,
@@ -250,7 +260,7 @@ class Agent:
                         has_bottom_cave_hole,
                         has_left_cave_hole
                 ):
-                    weights[2] = 0
+                    result[2] = 0
 
                 if Agent.__has_left_cave_hole__(
                         agent_direction,
@@ -259,7 +269,7 @@ class Agent:
                         has_bottom_cave_hole,
                         has_left_cave_hole
                 ):
-                    weights[3] = 0
+                    result[3] = 0
 
             is_top_cave_visible = state_hash[12] == 1
             is_right_cave_visible = state_hash[12 * 2] == 1
@@ -273,8 +283,8 @@ class Agent:
                     is_bottom_cave_visible,
                     is_left_cave_visible
             ):
-                weights[1] *= 0
-                weights[5] = 0
+                result[1] *= 0.2
+                result[5] = 0
 
             if Agent.__is_right_cave_visible__(
                     agent_direction,
@@ -283,8 +293,8 @@ class Agent:
                     is_bottom_cave_visible,
                     is_left_cave_visible
             ):
-                weights[4] *= 0
-                weights[8] = 0
+                result[4] *= 0.2
+                result[8] = 0
 
             if Agent.__is_behind_cave_visible__(
                     agent_direction,
@@ -293,8 +303,8 @@ class Agent:
                     is_bottom_cave_visible,
                     is_left_cave_visible
             ):
-                weights[2] *= 0
-                weights[6] = 0
+                result[2] *= 0.2
+                result[6] = 0
 
             if Agent.__is_left_cave_visible__(
                     agent_direction,
@@ -303,10 +313,86 @@ class Agent:
                     is_bottom_cave_visible,
                     is_left_cave_visible
             ):
-                weights[3] *= 0
-                weights[7] = 0
+                result[3] *= 0.2
+                result[7] = 0
 
-        return weights
+        return result
+
+    @staticmethod
+    def __print_state_hash__(state_hash):
+        print(f'Monster: {state_hash[0] == 1}')
+        print(f'Arrow count: {state_hash[1]}')
+        print(f'Leg count: {state_hash[2]}')
+
+        print('Current cave:')
+        print(f'\tGold: {state_hash[3]}')
+        print(f'\tWind: {state_hash[4]}')
+        print(f'\tHole: {state_hash[5]}')
+        print(f'\tBones: {state_hash[6]}')
+
+        print('Top cave:')
+        print(f'\tGold: {state_hash[7]}')
+        print(f'\tWind: {state_hash[8]}')
+        print(f'\tHole: {state_hash[9]}')
+        print(f'\tBones: {state_hash[10]}')
+        print(f'\tWall: {state_hash[11]}')
+        print(f'\tVisible: {state_hash[12]}')
+
+        print('Top-Right cave:')
+        print(f'\tGold: {state_hash[13]}')
+        print(f'\tWind: {state_hash[14]}')
+        print(f'\tHole: {state_hash[15]}')
+        print(f'\tBones: {state_hash[16]}')
+        print(f'\tWall: {state_hash[17]}')
+        print(f'\tVisible: {state_hash[18]}')
+
+        print('Right cave:')
+        print(f'\tGold: {state_hash[19]}')
+        print(f'\tWind: {state_hash[20]}')
+        print(f'\tHole: {state_hash[21]}')
+        print(f'\tBones: {state_hash[22]}')
+        print(f'\tWall: {state_hash[23]}')
+        print(f'\tVisible: {state_hash[24]}')
+
+        print('Bottom-Right cave:')
+        print(f'\tGold: {state_hash[25]}')
+        print(f'\tWind: {state_hash[26]}')
+        print(f'\tHole: {state_hash[27]}')
+        print(f'\tBones: {state_hash[28]}')
+        print(f'\tWall: {state_hash[29]}')
+        print(f'\tVisible: {state_hash[30]}')
+
+        print('Bottom cave:')
+        print(f'\tGold: {state_hash[31]}')
+        print(f'\tWind: {state_hash[32]}')
+        print(f'\tHole: {state_hash[33]}')
+        print(f'\tBones: {state_hash[34]}')
+        print(f'\tWall: {state_hash[35]}')
+        print(f'\tVisible: {state_hash[36]}')
+
+        print('Bottom-Left cave:')
+        print(f'\tGold: {state_hash[37]}')
+        print(f'\tWind: {state_hash[38]}')
+        print(f'\tHole: {state_hash[39]}')
+        print(f'\tBones: {state_hash[40]}')
+        print(f'\tWall: {state_hash[41]}')
+        print(f'\tVisible: {state_hash[42]}')
+
+        print('Left cave:')
+        print(f'\tGold: {state_hash[43]}')
+        print(f'\tWind: {state_hash[44]}')
+        print(f'\tHole: {state_hash[45]}')
+        print(f'\tBones: {state_hash[46]}')
+        print(f'\tWall: {state_hash[47]}')
+        print(f'\tVisible: {state_hash[48]}')
+
+        print('Top-Left cave:')
+        print(f'\tGold: {state_hash[49]}')
+        print(f'\tWind: {state_hash[50]}')
+        print(f'\tHole: {state_hash[51]}')
+        print(f'\tBones: {state_hash[52]}')
+        print(f'\tWall: {state_hash[53]}')
+        print(f'\tVisible: {state_hash[54]}')
 
     @staticmethod
     def __is_forward_cave_wall__(
