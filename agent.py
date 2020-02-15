@@ -1,6 +1,7 @@
 import numpy as np
 import random as rnd
 
+from world_info_visualizer import WorldInfoVisualizer
 from world_info import WorldInfo
 from action import Action
 
@@ -43,6 +44,7 @@ class Agent:
 
         response_error = response['error']
         world_info = WorldInfo.parse(response['text'])
+        WorldInfoVisualizer.draw_in_console(world_info)
         state_hash = Agent.__get_state_hash__(world_info)
         self.previous_action_name = 'none'
         self.previous_score = score
@@ -61,6 +63,7 @@ class Agent:
             if response is not None:
                 response_error = response['error']
                 world_info = WorldInfo.parse(response['text'])
+                WorldInfoVisualizer.draw_in_console(world_info)
                 score = world_info.agent_info.score
                 response_code = int(response['text']['code'])
                 state_hash = Agent.__get_state_hash__(world_info)
@@ -96,16 +99,16 @@ class Agent:
 
     @staticmethod
     def __get_current_cave_state_hash__(cave):
-        return f'{int(cave.has_gold)}' \
-               f'{int(cave.has_wind)}' \
-               f'{int(cave.has_hole)}' \
-               f'{int(cave.has_bones)}'
+        return f'{int(cave.has_gold or 2)}' \
+               f'{int(cave.has_wind or 2)}' \
+               f'{int(cave.has_hole or 2)}' \
+               f'{int(cave.has_bones or 2)}'
 
     @staticmethod
     def __get_near_cave_state_hash__(cave):
         return f'{Agent.__get_current_cave_state_hash__(cave)}' \
                f'{int(cave.is_wall)}' \
-               f'{int(cave.is_visible)}'
+               f'{int(cave.is_visible or 2)}'
 
     @staticmethod
     def __game_not_over__(request_error):
@@ -116,7 +119,7 @@ class Agent:
         output_layer, hidden_layer = self.neural_network.policy_forward(input_layer)
 
         if rnd.random() < 1:
-            output_layer = self.__correct_weights__(output_layer, input_layer, agent_direction)
+            output_layer = self.__correct_weights__(output_layer.copy(), input_layer, agent_direction)
 
         difference_vector = (np.array(self.__get_absolute_weights__(output_layer)) - output_layer)
 

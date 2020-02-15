@@ -9,7 +9,8 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 name = 'Elder'
 user_id = 293
 # case_id = 20  # 1 обвал, 1 монстр
-case_id = 6  # 0 обвал, 0 монстр
+# case_id = 6  # 0 обвал, 0 монстр
+case_id = 1  # 2 обвала, 1 монстр (всё видно)
 # case_id = 7  # 1 обвал, 0 монстр
 # case_id = 11  # 0 обвал, 1 монстр
 tournament_id = 0
@@ -36,7 +37,7 @@ agent_manager = AgentManager(
             lambda: []
         )[case_id == 0]()
     ),
-    attempts_count=10000,
+    attempts_count=1,
     file_name=file_name,
     input_layer_size=input_layer_size,
     hidden_layer_size=hidden_layer_size,
