@@ -20,14 +20,11 @@ class NeuralNetwork:
     decay_rate = 0
 
     model = {}
-    r_m_s_prop_cache = {}
 
-    a_xs = []
-    a_hs = []
-    a_errs = []
-    a_rs = []
-    a_zerrs = []
-    grad_buffer = {}
+    a_input_layers = []
+    a_hidden_layers = []
+    a_z_difference_vectors = []
+    gradients = {}
 
     games_count = 0
 
@@ -49,33 +46,33 @@ class NeuralNetwork:
         discounted_rewards = NeuralNetwork.__discount_rewards__(matrix_rewards, self.gamma)
         normalized_discounted_rewards = NeuralNetwork.__normalize_discounted_rewards__(discounted_rewards)
 
-        a_xs = np.vstack(input_layers)
-        a_hs = np.vstack(hidden_layers)
-        a_errs = np.vstack([difference_vectors])
+        a_input_layers = np.vstack(input_layers)
+        a_hidden_layers = np.vstack(hidden_layers)
+        a_difference_vectors = np.vstack([difference_vectors])
 
-        a_zerrs = a_errs * normalized_discounted_rewards
+        a_z_difference_vectors = a_difference_vectors * normalized_discounted_rewards
 
-        if self.games_count % self.batch_size == 1:  # начинаем накапливать информацию о новом пакете игр
-            self.a_xs = a_xs.copy()
-            self.a_hs = a_hs.copy()
-            self.a_zerrs = a_zerrs.copy()
+        if self.games_count % self.batch_size == 1:
+            self.a_input_layers = a_input_layers.copy()
+            self.a_hidden_layers = a_hidden_layers.copy()
+            self.a_z_difference_vectors = a_z_difference_vectors.copy()
 
         else:
-            self.a_xs = np.vstack((self.a_xs, a_xs))
-            self.a_hs = np.vstack((self.a_hs, a_hs))
-            self.a_zerrs = np.vstack((self.a_zerrs, a_zerrs))
+            self.a_input_layers = np.vstack((self.a_input_layers, a_input_layers))
+            self.a_hidden_layers = np.vstack((self.a_hidden_layers, a_hidden_layers))
+            self.a_z_difference_vectors = np.vstack((self.a_z_difference_vectors, a_z_difference_vectors))
 
-        grad_w = self.__policy_backward__(a_xs, a_hs, a_zerrs)
+        gradient_to_accumulate = self.__policy_backward__(a_input_layers, a_hidden_layers, a_z_difference_vectors)
 
         for k in self.model:
-            self.grad_buffer[k] += grad_w[k]
+            self.gradients[k] += gradient_to_accumulate[k]
 
         if self.games_count % self.batch_size == 0:  # корректировка весов - метод SGD
             print('Update neural network')
             for k, v in self.model.items():
-                g = self.grad_buffer[k]
-                self.model[k] -= self.learning_rate * g
-                self.grad_buffer[k] = np.zeros_like(v)
+                gradient = self.gradients[k]
+                self.model[k] -= self.learning_rate * gradient
+                self.gradients[k] = np.zeros_like(v)
 
             self.__save__()
 
@@ -136,7 +133,7 @@ class NeuralNetwork:
                 np.random.randn(self.output_layer_size, self.hidden_layer_size) / np.sqrt(self.hidden_layer_size)
         }
         for k, v in self.model.items():
-            self.grad_buffer[k] = np.zeros_like(v)
+            self.gradients[k] = np.zeros_like(v)
 
     @staticmethod
     def __get_latest_created_file__(file_name):
@@ -151,7 +148,7 @@ class NeuralNetwork:
         latest_created_file = NeuralNetwork.__get_latest_created_file__(self.file_name)
         self.model = pickle.load(open(latest_created_file, 'rb'))
         for k, v in self.model.items():
-            self.grad_buffer[k] = np.zeros_like(v)
+            self.gradients[k] = np.zeros_like(v)
         print(f'Loaded model from {latest_created_file}')
 
     def __save__(self):
