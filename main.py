@@ -9,18 +9,16 @@ from server_helper.server_helper_training import ServerHelperTraining
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 name = 'Elder'
-user_id = 293
-# user_id = 3574
+user_id = 0
 case_id = 0
 # case_id = 1  # 2 обвала, 1 монстр (всё видно)
 # case_id = 6  # 0 обвал, 0 монстр
 # case_id = 7  # 1 обвал, 0 монстр
-case_id = 20  # 1 обвал, 1 монстр, есть безопасный проход к кладу
+# case_id = 20  # 1 обвал, 1 монстр, есть безопасный проход к кладу
 # case_id = 12  # 1 обвал, 1 монстр
 # case_id = 16  # 0 обвал, 1 монстр, монстр защищает клад
 tournament_id = 0
 # tournament_id = 40
-hash_id = 0
 hash_id = 0
 # hash_ids = []
 map_numbers = random.sample(list(range(1, 2)), 1)
