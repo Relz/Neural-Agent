@@ -45,7 +45,7 @@ class Agent:
         response_error = response['error']
         world_info = WorldInfo.parse(response['text'])
         print()
-        WorldInfoVisualizer.draw_in_console(world_info)
+        WorldInfoVisualizer.draw_in_console(response['text'])
         print()
         state_hash = Agent.__get_state_hash__(world_info)
         self.previous_action_name = 'none'
@@ -70,7 +70,7 @@ class Agent:
 
             response_error = response['error']
             world_info = WorldInfo.parse(response['text'])
-            WorldInfoVisualizer.draw_in_console(world_info)
+            WorldInfoVisualizer.draw_in_console(response['text'])
             score = world_info.agent_info.score
             response_code = int(response['text']['code'])
             state_hash = Agent.__get_state_hash__(world_info)
