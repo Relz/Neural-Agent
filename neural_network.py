@@ -71,7 +71,7 @@ class NeuralNetwork:
             print('Update neural network')
             for k, v in self.model.items():
                 gradient = self.gradients[k]
-                self.model[k] -= self.learning_rate * gradient
+                self.model[k] += self.learning_rate * gradient
                 self.gradients[k] = np.zeros_like(v)
 
             self.__save__()

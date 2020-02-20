@@ -15,13 +15,15 @@ case_id = 0
 # case_id = 1  # 2 обвала, 1 монстр (всё видно)
 # case_id = 6  # 0 обвал, 0 монстр
 # case_id = 7  # 1 обвал, 0 монстр
-case_id = 20  # 1 обвал, 1 монстр
+case_id = 20  # 1 обвал, 1 монстр, есть безопасный проход к кладу
+# case_id = 12  # 1 обвал, 1 монстр
 # case_id = 16  # 0 обвал, 1 монстр, монстр защищает клад
 tournament_id = 0
 # tournament_id = 40
 hash_id = 0
-# hash_id = '9c71bff4caf4c3a946b72f777fbe96fe'
-map_numbers = random.sample(list(range(1, 251)), 50)
+hash_id = 0
+# hash_ids = []
+map_numbers = random.sample(list(range(1, 2)), 1)
 file_name = f'./neural_network_models/{name}'
 input_layer_size = 3 + 4 + 6 * 8  # количество нейронов, описывающих состояние игры
 hidden_layer_size = input_layer_size * 3   # произвольно подбираемое число
@@ -33,6 +35,7 @@ batch_size = 10  # размер пакета обучения: сколько и
 decay_rate = 0.95  # коэффициент затухания для RMSProp leaky суммы квадрата градиента
 
 agent_manager = AgentManager(
+    # server_helper_creators=list(map(lambda hash_id: lambda: ServerHelperExamination(hash_id), hash_ids)),
     server_helper_creators=
     ((lambda: [lambda: ServerHelperTournament(user_id, tournament_id)], lambda: [])[tournament_id == 0]()) +
     ((lambda: [lambda: ServerHelperExamination(hash_id)], lambda: [])[hash_id == 0]()) +

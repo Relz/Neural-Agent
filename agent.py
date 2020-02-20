@@ -44,7 +44,9 @@ class Agent:
 
         response_error = response['error']
         world_info = WorldInfo.parse(response['text'])
+        print()
         WorldInfoVisualizer.draw_in_console(world_info)
+        print()
         state_hash = Agent.__get_state_hash__(world_info)
         self.previous_action_name = 'none'
         self.previous_score = score
@@ -271,6 +273,51 @@ class Agent:
                 ):
                     result[3] = 0
 
+                is_top_cave_visible = state_hash[12] == 1
+                is_right_cave_visible = state_hash[12 * 2] == 1
+                is_bottom_cave_visible = state_hash[12 * 3] == 1
+                is_left_cave_visible = state_hash[12 * 4] == 1
+
+                if Agent.__is_forward_cave_visible__(
+                        agent_direction,
+                        is_top_cave_visible,
+                        is_right_cave_visible,
+                        is_bottom_cave_visible,
+                        is_left_cave_visible
+                ):
+                    result[1] *= 0.2
+                    result[5] = 0
+
+                if Agent.__is_right_cave_visible__(
+                        agent_direction,
+                        is_top_cave_visible,
+                        is_right_cave_visible,
+                        is_bottom_cave_visible,
+                        is_left_cave_visible
+                ):
+                    result[4] *= 0.2
+                    result[8] = 0
+
+                if Agent.__is_behind_cave_visible__(
+                        agent_direction,
+                        is_top_cave_visible,
+                        is_right_cave_visible,
+                        is_bottom_cave_visible,
+                        is_left_cave_visible
+                ):
+                    result[2] *= 0.2
+                    result[6] = 0
+
+                if Agent.__is_left_cave_visible__(
+                        agent_direction,
+                        is_top_cave_visible,
+                        is_right_cave_visible,
+                        is_bottom_cave_visible,
+                        is_left_cave_visible
+                ):
+                    result[3] *= 0.2
+                    result[7] = 0
+
         return result
 
     @staticmethod
@@ -391,6 +438,66 @@ class Agent:
             'Right': has_top_cave_hole,
             'Down': has_right_cave_hole,
             'Left': has_bottom_cave_hole
+        }[pivot_direction]
+
+    @staticmethod
+    def __is_forward_cave_visible__(
+            pivot_direction,
+            is_top_cave_visible,
+            is_right_cave_visible,
+            is_bottom_cave_visible,
+            is_left_cave_visible
+    ):
+        return {
+            'Up': is_top_cave_visible,
+            'Right': is_right_cave_visible,
+            'Down': is_bottom_cave_visible,
+            'Left': is_left_cave_visible
+        }[pivot_direction]
+
+    @staticmethod
+    def __is_right_cave_visible__(
+            pivot_direction,
+            is_top_cave_visible,
+            is_right_cave_visible,
+            is_bottom_cave_visible,
+            is_left_cave_visible
+    ):
+        return {
+            'Up': is_right_cave_visible,
+            'Right': is_bottom_cave_visible,
+            'Down': is_left_cave_visible,
+            'Left': is_top_cave_visible
+        }[pivot_direction]
+
+    @staticmethod
+    def __is_behind_cave_visible__(
+            pivot_direction,
+            is_top_cave_visible,
+            is_right_cave_visible,
+            is_bottom_cave_visible,
+            is_left_cave_visible
+    ):
+        return {
+            'Up': is_bottom_cave_visible,
+            'Right': is_left_cave_visible,
+            'Down': is_top_cave_visible,
+            'Left': is_right_cave_visible
+        }[pivot_direction]
+
+    @staticmethod
+    def __is_left_cave_visible__(
+            pivot_direction,
+            is_top_cave_visible,
+            is_right_cave_visible,
+            is_bottom_cave_visible,
+            is_left_cave_visible
+    ):
+        return {
+            'Up': is_left_cave_visible,
+            'Right': is_top_cave_visible,
+            'Down': is_right_cave_visible,
+            'Left': is_bottom_cave_visible
         }[pivot_direction]
 
     # получить случайное действие с вероятностью, зависящей от его веса-полезности
